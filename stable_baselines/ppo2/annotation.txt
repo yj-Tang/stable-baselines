@@ -1,0 +1,5 @@
+training parameters：
+model = self    #The policy model to learn
+n_steps ： The number of steps to run for each environment per update
+n_batch = n_envs * n_steps  #batch size is n_steps * n_env where n_env is number of environment copies running in parallel
+nminibatches : n_batch_train = self.n_batch // self.nminibatches
