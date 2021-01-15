@@ -52,6 +52,7 @@ def mlp(input_tensor, layers, activ_fn=tf.nn.relu, layer_norm=False):
     :param layer_norm: (bool) Whether to apply layer normalization or not
     :return: (tf.Tensor)
     """
+    print("layers:",layers)
     output = input_tensor
     for i, layer_size in enumerate(layers):
         output = tf.layers.dense(output, layer_size, name='fc' + str(i))

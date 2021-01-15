@@ -173,7 +173,7 @@ class FeedForwardPolicy(SACPolicy):
         self.cnn_extractor = cnn_extractor
         self.reuse = reuse
         if layers is None:
-            layers = [64, 64]
+            layers = [128, 64, 32]
         self.layers = layers
         self.reg_loss = None
         self.reg_weight = reg_weight
@@ -186,7 +186,6 @@ class FeedForwardPolicy(SACPolicy):
     def make_actor(self, obs=None, reuse=False, scope="pi"):
         if obs is None:
             obs = self.processed_obs
-
         with tf.variable_scope(scope, reuse=reuse):
             if self.feature_extraction == "cnn":
                 pi_h = self.cnn_extractor(obs, **self.cnn_kwargs)

@@ -6,14 +6,15 @@ import os
 train = True #True #False
 inference = False
 model_num = 1
-algorithm = "DDPG"   # PPO2, SAC, DDPG
-env_name = 'Pendulum-v0'  # 'Ex3_EKF_gyro-v0', 'Pendulum-v0','Ex3_pureEKF_gyro'
-total_timesteps_ = 3000000  # 3000000 for sac,  500000 for ppo2
-tensorboard_log_name = algorithm+"_test_"+env_name
+algorithm = "SAC"   # PPO2, SAC, DDPG, PPO1
+env_name = 'Ex3_EKF_gyro-v0'  # 'Ex3_EKF_gyro-v0', 'Pendulum-v0','Ex3_pureEKF_gyro'
+total_timesteps_ = 3000000  # 3000000 for sac,  500000 for ppo2, 1500000 for ddpg
+exp_num = "2"
+tensorboard_log_name = algorithm+"_"+exp_num+"_"+env_name
 tensorboard_log_dir = "./logs/"
-# tensorboard --logdir=PPO2_ekf_1_1 --port=6006 --host=127.0.0.1
-# tensorboard --logdir=PPO2_Pendulum_v0_0_2 --port=6006 --host=127.0.0.1
-model_save_name = tensorboard_log_name+"_model_test"
+# tensorboard --logdir=PPO2_1_Ex3_EKF_gyro-v0_1 --port=6006 --host=127.0.0.1
+# tensorboard --logdir=sac_ekf_3_3 --port=6007 --host=127.0.0.2
+model_save_name = tensorboard_log_name+"_model_"+exp_num
 
 if algorithm == "PPO2":
     from itertools import cycle
@@ -26,6 +27,15 @@ if algorithm == "PPO2":
         for i in range(model_num):
             model.learn(total_timesteps=total_timesteps_, tb_log_name=tensorboard_log_name)
             model.save(model_save_name)
+elif algorithm == "PPO1":
+    from stable_baselines.common.policies import MlpPolicy
+    from stable_baselines import PPO1
+    env = gym.make(env_name)
+    model = PPO1(MlpPolicy, env, verbose=1)
+    if train:
+        for i in range(model_num):
+            model.learn(total_timesteps=total_timesteps_)
+            model.save(model_save_name)
 elif algorithm == "SAC":
     from stable_baselines.sac.policies import MlpPolicy
     from stable_baselines import SAC
@@ -33,7 +43,7 @@ elif algorithm == "SAC":
     model = SAC(MlpPolicy, env, verbose=1, tensorboard_log=tensorboard_log_dir)
     if train:
         for i in range(model_num):
-            model.learn(total_timesteps=total_timesteps_, log_interval=1, tb_log_name=tensorboard_log_name)
+            model.learn(total_timesteps=total_timesteps_, log_interval=10, tb_log_name=tensorboard_log_name)
             model.save(model_save_name)
 elif algorithm == "DDPG":
     if train:
@@ -46,9 +56,12 @@ elif algorithm == "DDPG":
             # the noise objects for DDPG
             n_actions = env.action_space.shape[-1]
             param_noise = None
-            action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), sigma=float(0.5) * np.ones(n_actions))
+            action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions),
+                                                        sigma=float(0.5) * np.ones(n_actions))
 
-            model = DDPG(MlpPolicy, env, verbose=1, param_noise=param_noise, action_noise=action_noise, tensorboard_log=tensorboard_log_dir)
+            model = DDPG(MlpPolicy, env, verbose=1, param_noise=param_noise,
+                         action_noise=action_noise, tensorboard_log=tensorboard_log_dir,
+                         )
             model.learn(total_timesteps=total_timesteps_, log_interval=1, tb_log_name=tensorboard_log_name)
             model.save(model_save_name)
 

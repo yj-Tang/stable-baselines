@@ -59,9 +59,9 @@ class SAC(OffPolicyRLModel):
     """
 
     def __init__(self, policy, env, gamma=0.99, learning_rate=3e-4, buffer_size=50000,
-                 learning_starts=100, train_freq=100, batch_size=256,
+                 learning_starts=100, train_freq=1, batch_size=64,
                  tau=0.005, ent_coef='auto', target_update_interval=1,
-                 gradient_steps=4, target_entropy='auto', action_noise=None,
+                 gradient_steps=1, target_entropy='auto', action_noise=None,
                  random_exploration=0.0, verbose=0, tensorboard_log=None,
                  _init_setup_model=True, policy_kwargs=None, full_tensorboard_log=False,
                  seed=None, n_cpu_tf_sess=None):
@@ -444,8 +444,6 @@ class SAC(OffPolicyRLModel):
                     tf_util.total_episode_reward_logger(self.episode_reward, ep_reward,
                                                         ep_done, writer, self.num_timesteps)
 
-
-
                 if self.num_timesteps % self.train_freq == 0:
                     callback.on_rollout_end()
 
@@ -489,25 +487,14 @@ class SAC(OffPolicyRLModel):
                     mean_reward = -np.inf
                 else:
                     mean_reward = round(float(np.mean(episode_rewards[-101:-1])), 1)
-                    cov_reward = round(float(np.std(episode_rewards[-101:-1])), 1)
 
                 # substract 1 as we appended a new term just now
                 num_episodes = len(episode_rewards) - 1 
                 # Display training infos
                 if self.verbose >= 1 and done and log_interval is not None and num_episodes % log_interval == 0:
-                    # print("\nnum_episodes", num_episodes)
-                    # print("\nlog_interval", log_interval)
                     fps = int(step / (time.time() - start_time))
                     logger.logkv("episodes", num_episodes)
-                    logger.logkv("mean 10 episode reward", mean_reward)
-
-                    if writer is not None:
-                        summary = tf.Summary(value=[tf.Summary.Value(tag="mean_EpReward", simple_value=mean_reward)])
-                        writer.add_summary(summary, n_updates)
-                        summary2 = tf.Summary(value=[tf.Summary.Value(tag="cov_EpReward", simple_value=cov_reward)])
-                        writer.add_summary(summary2, n_updates)
-
-
+                    logger.logkv("mean 100 episode reward", mean_reward)
                     if len(self.ep_info_buf) > 0 and len(self.ep_info_buf[0]) > 0:
                         logger.logkv('ep_rewmean', safe_mean([ep_info['r'] for ep_info in self.ep_info_buf]))
                         logger.logkv('eplenmean', safe_mean([ep_info['l'] for ep_info in self.ep_info_buf]))
@@ -585,6 +572,3 @@ class SAC(OffPolicyRLModel):
         params_to_save = self.get_parameters()
 
         self._save_to_file(save_path, data=data, params=params_to_save, cloudpickle=cloudpickle)
-
-
-

@@ -8,9 +8,9 @@ from stable_baselines.common.policies import MlpPolicy
 inference = True
 # Enjoy trained agent
 num_of_paths = 1
-max_ep_steps = 10000
-algorithm = "SAC"   # PPO2, SAC
-model_save_name = "sac_ekf_model_3"  #"ppo2_ekf_0", "sac_ekf_model_2"
+max_ep_steps = 800
+algorithm = "SAC"   # PPO2, SAC, DDPG
+model_save_name = "SAC_1_Ex3_EKF_gyro-v0_model_1"  #"ppo2_ekf_0", "sac_ekf_model_2"
 env_name = 'Ex3_EKF_gyro-v0'  # 'Ex3_EKF_gyro-v0', 'Pendulum-v0','Ex3_pureEKF_gyro'
 
 if algorithm == "PPO2":
@@ -65,7 +65,7 @@ if inference:
             episode_path["s_"].append(s_)
             if algorithm == "PPO2":
                 info = infos[0]
-            elif algorithm == "SAC":
+            else:
                 info = infos
             if "state_of_interest" in info.keys():
                 episode_path["state_of_interest"].append(
@@ -77,7 +77,7 @@ if inference:
             # Terminate if max step has been reached
             if algorithm == "PPO2":
                 done = dones[0]
-            if algorithm == "SAC":
+            else:
                 done = dones
 
             if j == (max_ep_steps-1):
